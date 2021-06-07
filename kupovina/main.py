@@ -18,7 +18,7 @@ def get_db():
 
 @app.post('/kupovina', status_code=status.HTTP_201_CREATED)
 def create(request: schemas.Kupovina, db : Session = Depends(get_db)):
-    nova_kupovina = models.Kupovina(kupac=request.kupac, grad=request.grad, proizvod=request.proizvod, cijena=request.cijena, datum_vrijeme=request.datum_vrijeme.strftime("%Y/%m/%d, %H:%M:%S"))
+    nova_kupovina = models.Kupovina(kupac=request.kupac, grad=request.grad, proizvod=request.proizvod, cijena=request.cijena)
     db.add(nova_kupovina)
     db.commit()
     db.refresh(nova_kupovina)
