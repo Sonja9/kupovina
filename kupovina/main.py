@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, status, Response
+from fastapi import FastAPI, Depends, status, Response, HTTPException
 import schemas, models
 from database import engine, SessionLocal
 from sqlalchemy.orm import Session
@@ -27,10 +27,22 @@ def create(request: schemas.Kupovina, db : Session = Depends(get_db)):
 
 @app.delete('/kupovina/{id}', status_code=status.HTTP_204_NO_CONTENT)
 def destroy(id, db : Session = Depends(get_db)):
-    db.query(models.Kupovina).filter(models.Kupovina.id == id).delete(synchronize_session=False)
+    kupovina = db.query(models.Kupovina).filter(models.Kupovina.id == id)
+    if not kupovina.first():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Ne postoji kupovina {id}")
+    kupovina.delete(synchronize_session=False)
     db.commit()
-    return 'done'
+    return 'izbrisano'
 
+
+@app.put('/kupovina/{id}', status_code=status.HTTP_202_ACCEPTED)
+def update(id, request: schemas.Kupovina, db : Session = Depends(get_db)):
+    kupovina = db.query(models.Kupovina).filter(models.Kupovina.id == id)
+    if not kupovina.first():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Ne postoji kupovina {id}")
+    kupovina.update({'kupac':request.kupac, 'grad':request.grad, 'proizvod':request.proizvod, 'cijena':request.cijena})
+    db.commit()
+    return 'izmijenjeno'
 
 
 @app.get('/kupovina')
